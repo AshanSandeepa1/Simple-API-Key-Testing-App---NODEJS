@@ -1,16 +1,18 @@
 const express = require('express');
-const cors = require('cors');
+const path = require('path');
 const app = express();
 const PORT = 3000;
 
 // Constant API key (shared with client)
 const API_KEY = '1234567890abcdef';
 
-app.use(cors());
 app.use(express.json());
 
-// Middleware to validate API key from header or query parameter
-app.use((req, res, next) => {
+// Serve static HTML, CSS, JS from "public" folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Middleware to validate API key (for API routes only)
+app.use('/students', (req, res, next) => {
   const keyFromHeader = req.headers['x-api-key'];
   const keyFromQuery = req.query.apiKey;
 
@@ -40,4 +42,3 @@ app.get('/students', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
