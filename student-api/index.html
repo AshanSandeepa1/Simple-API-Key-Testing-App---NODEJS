@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 400px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+    h3 {
+      margin-top: 25px;
+      color: #555;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 8px;
+      transition: background-color 0.2s ease-in-out;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+    li:last-child {
+      border-bottom: none;
+    }
+    .message {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #333;
+    }
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Student Management</h1>
+
+    <h3>Add Student</h3>
+    <input id="id" placeholder="ID">
+    <input id="name" placeholder="Name">
+    <button onclick="addStudent()">Add</button>
+    <div id="addMessage" class="message"></div>
+
+    <h3>All Students</h3>
+    <button onclick="getStudents()">Load Students</button>
+    <ul id="studentList"></ul>
+  </div>
+
+  <script>
+    const API_KEY = '1234567890abcdef';
+    const BASE_URL = `http://localhost:3000/students?apiKey=${API_KEY}`;
+
+    function addStudent() {
+      const id = document.getElementById('id').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const message = document.getElementById('addMessage');
+
+      if (!id || !name) {
+        message.textContent = 'Please enter both ID and Name.';
+        message.className = 'message error';
+        return;
+      }
+
+      fetch(BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': API_KEY
+        },
+        body: JSON.stringify({ id, name })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Invalid API key or request');
+        return res.json();
+      })
+      .then(data => {
+        message.textContent = 'Student added successfully!';
+        message.className = 'message success';
+        document.getElementById('id').value = '';
+        document.getElementById('name').value = '';
+      })
+      .catch(err => {
+        message.textContent = 'Error: ' + err.message;
+        message.className = 'message error';
+      });
+    }
+
+    function getStudents() {
+      fetch(BASE_URL, {
+        headers: { 'x-api-key': API_KEY }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Unauthorized or failed request');
+        return res.json();
+      })
+      .then(data => {
+        const list = document.getElementById('studentList');
+        list.innerHTML = '';
+        if (data.length === 0) {
+          list.innerHTML = '<li>No students found.</li>';
+          return;
+        }
+        data.forEach(s => {
+          const li = document.createElement('li');
+          li.innerText = `${s.id} - ${s.name}`;
+          list.appendChild(li);
+        });
+      })
+      .catch(err => alert('Error: ' + err.message));
+    }
+  </script>
+</body>
+</html>
